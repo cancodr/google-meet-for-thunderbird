@@ -4,6 +4,7 @@ let messageData = null;
 let accessToken = null;
 let attendeesList = [];
 let createdEventId = null;
+let invitesSent = false;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -537,9 +538,21 @@ function setupEventListeners() {
     addNotificationRow("popup", 10, "minutes");
   });
 
-  document.getElementById("btn-cancel").addEventListener("click", () => {
+  document.getElementById("btn-cancel").addEventListener("click", async () => {
+    await deleteDraftIfExists();
     messenger.runtime.sendMessage({ type: "POPUP_CLOSED" });
     window.close();
+  });
+
+  // Clean up draft if user closes the window with the X button
+  window.addEventListener("unload", () => {
+    if (createdEventId && !invitesSent && accessToken) {
+      fetch(`${CONFIG.CALENDAR_API_BASE}/calendars/primary/events/${createdEventId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        keepalive: true,
+      });
+    }
   });
 
   document.getElementById("btn-generate-link").addEventListener("click", handleGenerateLink);
@@ -603,6 +616,18 @@ function buildEventPayload({ withConference = false } = {}) {
   }
 
   return payload;
+}
+
+// ── Draft Cleanup ─────────────────────────────────────────────────────────────
+
+async function deleteDraftIfExists() {
+  if (!createdEventId || invitesSent) return;
+  try {
+    await callCalendarAPI("DELETE", `/calendars/primary/events/${createdEventId}`);
+    createdEventId = null;
+  } catch (e) {
+    console.warn("Could not delete draft event:", e);
+  }
 }
 
 // ── Generate Meeting Link ─────────────────────────────────────────────────────
@@ -686,6 +711,7 @@ async function handleSendInvites() {
     let msg = n > 0 ? `✅ Meeting created! Invites sent to ${n} guest(s).` : "✅ Meeting created.";
     if (meetLink) msg += `\n\n🔗 ${meetLink}`;
 
+    invitesSent = true;
     showStatus(msg, "success");
     btn.textContent = "Done ✓";
     setTimeout(() => {

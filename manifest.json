@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Schedule Google Meet",
+  "name": "Google Meet Scheduler for Thunderbird",
   "version": "1.0",
   "description": "Schedule a Google Meet meeting directly from a Thunderbird message",
 
@@ -28,7 +28,14 @@
   },
 
   "browser_action": {
-    "default_title": "Schedule Google Meet",
+    "default_title": "Google Meet Scheduler for Thunderbird",
     "default_icon": "icons/icon-64.png"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "google-meet-for-thunderbird@cancodr.github.io",
+      "strict_min_version": "78.0"
+    }
   }
 }
