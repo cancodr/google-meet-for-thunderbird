@@ -1,0 +1,7 @@
+# Google OAuth credentials — keep out of public repo
+client_secret_*.json
+config.js
+
+# OS files
+.DS_Store
+Thumbs.db

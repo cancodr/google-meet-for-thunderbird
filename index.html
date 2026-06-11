@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GMeet Scheduler for Thunderbird</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #202124;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e8eaed;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #202124;
+      text-decoration: none;
+    }
+    .logo img { width: 32px; height: 32px; }
+    nav a {
+      color: #5f6368;
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 24px;
+    }
+    nav a:hover { color: #1a73e8; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%);
+      padding: 72px 24px 64px;
+      text-align: center;
+    }
+    .hero-icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 700;
+      color: #202124;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #5f6368;
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: #1a73e8;
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: #1a73e8;
+      text-decoration: none;
+      padding: 14px 24px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      border: 1px solid #dadce0;
+      margin-left: 12px;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: #f1f3f4; }
+
+    /* ── Features ── */
+    .section {
+      padding: 64px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 48px;
+      color: #202124;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 32px;
+    }
+    .feature-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 28px 24px;
+      border: 1px solid #e8eaed;
+    }
+    .feature-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #202124;
+    }
+    .feature-card p {
+      font-size: 14px;
+      color: #5f6368;
+      line-height: 1.6;
+    }
+
+    /* ── How it works ── */
+    .how-section {
+      background: #f8f9fa;
+      padding: 64px 24px;
+    }
+    .how-inner {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin-top: 40px;
+    }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .step-num {
+      background: #1a73e8;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-num::before { content: counter(step); }
+    .steps li div h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #202124;
+    }
+    .steps li div p {
+      font-size: 14px;
+      color: #5f6368;
+    }
+
+    /* ── Install ── */
+    .install-section {
+      padding: 64px 24px;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .install-section p {
+      font-size: 16px;
+      color: #5f6368;
+      margin-bottom: 32px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid #e8eaed;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #9aa0a6;
+    }
+    footer a { color: #9aa0a6; text-decoration: none; }
+    footer a:hover { color: #1a73e8; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="#">
+      <span>📹</span>
+      GMeet Scheduler
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#install">Install</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="https://github.com/cancodr/google-meet-for-thunderbird" target="_blank">GitHub</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-icon">📹</div>
+    <h1>Schedule Google Meet<br>from Thunderbird</h1>
+    <p>Right-click any email and schedule a Google Meet meeting in seconds — attendees, timezone, and agenda pre-filled automatically.</p>
+    <a href="https://addons.thunderbird.net" class="btn-primary" target="_blank">Install for Thunderbird</a>
+    <a href="https://github.com/cancodr/google-meet-for-thunderbird" class="btn-secondary" target="_blank">View on GitHub</a>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <h2 class="section-title">Everything you need</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>One right-click away</h3>
+        <p>Right-click any message in your inbox to open the scheduling dialog — no copy-pasting required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <h3>Auto-populated attendees</h3>
+        <p>Everyone in the From, To, and CC fields is automatically added as a guest. Edit the list before sending.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Generate link first</h3>
+        <p>Generate a Google Meet link before sending invites — useful for pasting into a separate email or chat.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Full timezone support</h3>
+        <p>Searchable timezone picker with GMT offsets and city names — defaults to your local timezone.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Notification settings</h3>
+        <p>Set email and popup notifications before your meeting — configurable per event.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📒</div>
+        <h3>Contact autocomplete</h3>
+        <p>Type a name to search your Thunderbird address book and add guests without typing full email addresses.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <div class="how-section" id="how-it-works">
+    <div class="how-inner">
+      <h2 class="section-title">How it works</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-num"></div>
+          <div>
+            <h4>Right-click a message</h4>
+            <p>Select "Schedule Google Meet" from the context menu on any email in your message list.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num"></div>
+          <div>
+            <h4>Review the pre-filled form</h4>
+            <p>The meeting title, attendees, and description are auto-populated from the email. Adjust as needed.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num"></div>
+          <div>
+            <h4>Generate a Meet link (optional)</h4>
+            <p>Click "Generate Meeting Link" to get a Google Meet URL you can share immediately — before sending calendar invites.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num"></div>
+          <div>
+            <h4>Send invites</h4>
+            <p>Click "Send Invites" to create the Google Calendar event and email all attendees at once.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Install -->
+  <section class="install-section" id="install">
+    <h2 class="section-title">Install</h2>
+    <p>Available as a free add-on for Mozilla Thunderbird. Requires a Google account to create calendar events.</p>
+    <a href="https://addons.thunderbird.net" class="btn-primary" target="_blank">Get it on Thunderbird Add-ons</a>
+  </section>
+
+  <footer>
+    <p>
+      &copy; 2026 GMeet Scheduler for Thunderbird &nbsp;·&nbsp;
+      <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+      <a href="https://github.com/cancodr/google-meet-for-thunderbird" target="_blank">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>

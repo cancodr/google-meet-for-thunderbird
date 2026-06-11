@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule Google Meet</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #202124;
+      background: #fff;
+      width: 500px;
+      padding: 16px 20px 20px;
+      overflow-y: auto;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a73e8;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .row { display: flex; gap: 8px; }
+    .row .form-group { flex: 1; }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="search"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #202124;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+    }
+
+    textarea { resize: vertical; min-height: 60px; }
+
+    .title-input {
+      font-size: 18px !important;
+      padding: 8px 4px !important;
+      border: none !important;
+      border-bottom: 2px solid #dadce0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      margin-bottom: 4px;
+    }
+    .title-input:focus {
+      border-bottom-color: #1a73e8 !important;
+      box-shadow: none !important;
+    }
+
+    /* ── Timezone picker ── */
+    .tz-container { position: relative; }
+
+    .tz-display {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #202124;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .tz-display:hover { border-color: #5f6368; }
+    .tz-display.open,
+    .tz-display:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+      outline: none;
+    }
+    .tz-arrow { color: #5f6368; font-size: 11px; flex-shrink: 0; margin-left: 6px; }
+
+    .tz-modal {
+      position: absolute;
+      top: calc(100% + 3px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      z-index: 300;
+      padding: 8px;
+    }
+    .tz-modal input[type="search"] {
+      margin-bottom: 6px;
+      padding-left: 28px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 8px center;
+    }
+    #tz-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .tz-option {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tz-option:hover { background: #f1f3f4; }
+    .tz-option.active { background: #f1f3f4; }
+    .tz-option.selected {
+      background: #e8f0fe;
+      color: #1558d6;
+      font-weight: 500;
+    }
+
+    /* ── Attendees chip input ── */
+    .attendees-outer { position: relative; }
+    .attendees-wrap {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 5px 8px;
+      min-height: 36px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      cursor: text;
+      transition: border-color 0.15s;
+    }
+    .attendees-wrap:focus-within {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.15);
+    }
+    .attendees-wrap input {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 2px 4px !important;
+      flex: 1;
+      min-width: 140px;
+      font-size: 13px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      background: #e8f0fe;
+      color: #1558d6;
+      border-radius: 12px;
+      padding: 2px 8px 2px 10px;
+      font-size: 12px;
+      gap: 4px;
+      max-width: 220px;
+    }
+    .chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chip-remove {
+      cursor: pointer;
+      color: #5f6368;
+      font-size: 15px;
+      line-height: 1;
+      background: none;
+      border: none;
+      padding: 0 0 1px;
+      flex-shrink: 0;
+    }
+    .chip-remove:hover { color: #c5221f; }
+
+    /* ── Contacts autocomplete dropdown ── */
+    #ac-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 200;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    #ac-dropdown.open { display: block; }
+    .ac-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f3f4;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.active { background: #f1f3f4; }
+    .ac-name { font-size: 13px; color: #202124; font-weight: 500; }
+    .ac-email { font-size: 11px; color: #5f6368; }
+
+    /* ── Notifications ── */
+    .notification-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .notification-row select,
+    .notification-row input[type="number"] { padding: 6px 8px; }
+    .notif-method { flex: 1.4; }
+    .notif-value  { flex: 0.8; }
+    .notif-unit   { flex: 1.2; }
+    .btn-remove-notif {
+      background: none;
+      border: none;
+      color: #5f6368;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .btn-remove-notif:hover { color: #c5221f; }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: #1a73e8;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 0;
+      font-weight: 500;
+    }
+    .btn-link:hover { text-decoration: underline; }
+
+    /* ── Meet link section ── */
+    .meet-link-section {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+    .btn-generate {
+      background: none;
+      border: none;
+      color: #1a73e8;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .btn-generate:hover { text-decoration: underline; }
+    .btn-generate:disabled { color: #9aa0a6; cursor: not-allowed; text-decoration: none; }
+
+    .meet-link-display {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .meet-icon { font-size: 18px; flex-shrink: 0; }
+    .meet-link-url {
+      color: #1a73e8;
+      font-size: 12px;
+      word-break: break-all;
+      flex: 1;
+    }
+    .btn-copy {
+      background: #e8f0fe;
+      border: none;
+      color: #1a73e8;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .btn-copy:hover { background: #d2e3fc; }
+
+    /* ── Main buttons ── */
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    button { font-family: inherit; }
+
+    .btn-secondary {
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: #1a73e8;
+      border: 1px solid #dadce0;
+    }
+    .btn-secondary:hover { background: #f1f3f4; }
+
+    .btn-primary {
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+    }
+    .btn-primary:hover { background: #1765cc; }
+    .btn-primary:disabled { background: #a8c7fa; cursor: not-allowed; }
+
+    /* ── Status ── */
+    #status {
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: none;
+      white-space: pre-line;
+    }
+    #status.success { background: #e6f4ea; color: #137333; border: 1px solid #ceead6; display: block; }
+    #status.error   { background: #fce8e6; color: #c5221f; border: 1px solid #f5c6c5; display: block; }
+    #status.loading { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d9f9; display: block; }
+
+    hr { border: none; border-top: 1px solid #f1f3f4; margin: 12px 0; }
+
+    /* ── Donation footer ── */
+    .donation-footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: #9aa0a6;
+    }
+    .donation-footer a {
+      color: #9aa0a6;
+      text-decoration: none;
+    }
+    .donation-footer a:hover {
+      color: #1a73e8;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h2>📹 Schedule Google Meet</h2>
+
+  <div id="main-form">
+
+    <!-- Title -->
+    <div class="form-group">
+      <input type="text" id="title" class="title-input" placeholder="Add title" />
+    </div>
+
+    <!-- Date / Time / Duration -->
+    <div class="row">
+      <div class="form-group">
+        <label>📅 Date</label>
+        <input type="date" id="date" />
+      </div>
+      <div class="form-group">
+        <label>🕐 Time</label>
+        <input type="time" id="time" />
+      </div>
+      <div class="form-group">
+        <label>⏱ Duration</label>
+        <select id="duration">
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60" selected>1 hour</option>
+          <option value="90">90 min</option>
+          <option value="120">2 hours</option>
+          <option value="180">3 hours</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Timezone picker -->
+    <div class="form-group">
+      <label>🌐 Time Zone</label>
+      <div class="tz-container" id="tz-container">
+        <button id="tz-display" class="tz-display" type="button">
+          <span id="tz-current-text">Loading…</span>
+          <span class="tz-arrow">▾</span>
+        </button>
+        <div id="tz-modal" style="display:none" class="tz-modal">
+          <input type="search" id="tz-search" placeholder="Search city or timezone…" autocomplete="off" />
+          <div id="tz-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- Guests with contacts autocomplete -->
+    <div class="form-group">
+      <label>👥 Guests</label>
+      <div class="attendees-outer">
+        <div class="attendees-wrap" id="attendees-wrap">
+          <input type="text" id="attendee-input" placeholder="Type name or email…" autocomplete="off" />
+        </div>
+        <div id="ac-dropdown"></div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="form-group">
+      <label>🔔 Notifications</label>
+      <div id="notifications-list"></div>
+      <button id="btn-add-notification" class="btn-link" type="button">+ Add notification</button>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label>📝 Description</label>
+      <textarea id="description" rows="3" placeholder="Add description (optional)"></textarea>
+    </div>
+
+    <hr />
+
+    <!-- Meet Link Generation -->
+    <div class="meet-link-section">
+      <button id="btn-generate-link" class="btn-generate" type="button">
+        🔗 Generate Meeting Link
+      </button>
+      <div id="meet-link-display" class="meet-link-display">
+        <span class="meet-icon">📹</span>
+        <a id="meet-link-url" href="#" target="_blank" class="meet-link-url"></a>
+        <button id="btn-copy-link" class="btn-copy" type="button">Copy</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="button-row">
+      <button id="btn-cancel" class="btn-secondary">Cancel</button>
+      <button id="btn-submit" class="btn-primary" disabled>Send Invites</button>
+    </div>
+
+  </div>
+
+  <div id="status"></div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
